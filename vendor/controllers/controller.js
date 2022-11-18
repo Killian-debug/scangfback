@@ -109,8 +109,7 @@ exports.evenementAdd = async (request, response) => {
     let { description, objectif, type_med, type_url, url_des, type_anncs, duree, limite, id_anncrs, id_event } = await request.body;
     if((description != "" && description != undefined) && (objectif != "" && objectif != undefined) && (type_med != "" && type_med != undefined) && 
     (type_url != "" && type_url != undefined) && (url_des != "" && url_des != undefined) && (type_anncs != undefined && parseInt(type_anncs) >= 0) && 
-    (duree != "" && duree != undefined && parseInt(duree) > 0) && (limite != "" && limite != undefined && parseInt(limite) > 0) && 
-    (id_anncrs != "" && id_anncrs != undefined && parseInt(id_anncrs) > 0) && 
+    (duree != "" && duree != undefined && parseInt(duree) > 0) && (limite != undefined) && (id_anncrs != "" && id_anncrs != undefined && parseInt(id_anncrs) > 0) && 
     (id_event != "" && id_event != undefined && parseInt(id_event) > 0)) {
         try {
             db.query("SELECT * from evenements where id_event = ?", [id_event], (errEvent, dataEvent) => {
@@ -131,18 +130,33 @@ exports.evenementAdd = async (request, response) => {
                                 messageJson.msg = "Annonceur inexistant.";
                                 return response.json(messageJson);
                             }
-                            db.query(`INSERT into annonces(id_anncrs,id_event,description,objectif,type_med,type_url,url_des,type_anncs,
-                                duree,limite,status) values(?,?,?,?,?,?,?,?,?,?,?)`, 
-                            [id_anncrs, id_event, description, objectif, type_med, type_url, url_des, type_anncs, duree, limite, "actif"], 
-                            (err) => {
-                                if(err) {
-                                    messageJson.msg = err.message;
+                            if(limite != "" && parseInt(limite) > 0) {
+                                db.query(`INSERT into annonces(id_anncrs,id_event,description,objectif,type_med,type_url,url_des,type_anncs,
+                                    duree,limite,status) values(?,?,?,?,?,?,?,?,?,?,?)`, 
+                                [id_anncrs, id_event, description, objectif, type_med, type_url, url_des, type_anncs, duree, limite, "actif"], 
+                                (err) => {
+                                    if(err) {
+                                        messageJson.msg = err.message;
+                                        return response.json(messageJson);
+                                    }
+                                    messageJson.msg = "Annonce ajoutée avec succés.";
+                                    messageJson.succes = true;
                                     return response.json(messageJson);
-                                }
-                                messageJson.msg = "Annonce ajoutée avec succés.";
-                                messageJson.succes = true;
-                                return response.json(messageJson);
-                            });
+                                });
+                            } else {
+                                db.query(`INSERT into annonces(id_anncrs,id_event,description,objectif,type_med,type_url,url_des,type_anncs,
+                                    duree,limite,status) values(?,?,?,?,?,?,?,?,?,?,?)`, 
+                                [id_anncrs, id_event, description, objectif, type_med, type_url, url_des, type_anncs, duree, "actif"], 
+                                (err) => {
+                                    if(err) {
+                                        messageJson.msg = err.message;
+                                        return response.json(messageJson);
+                                    }
+                                    messageJson.msg = "Annonce ajoutée avec succés.";
+                                    messageJson.succes = true;
+                                    return response.json(messageJson);
+                                });
+                            }
                         }
                     });
                 }
@@ -191,7 +205,7 @@ exports.evenementAdd = async (request, response) => {
             }
             let idAnncsArray = anncsDatas.map(anncsData => anncsData.id_anncs);
             let id = generateur.generateur(idAnncsArray);
-            db.query("SELECT * from annonces where id_anncs = ?", [id], (err, datas) => {
+            db.query("SELECT * from annonces where id_anncs = ? and status = ?", [id, "actif"], (err, datas) => {
                 if(err) {
                     messageJson.msg = anncsErr.message;
                     return response.json(messageJson);
@@ -236,7 +250,7 @@ exports.evenementAdd = async (request, response) => {
                     messageJson.msg = "Evenement introuvable.";
                     return response.json(messageJson);
                 }
-                db.query("SELECT id_anncs from annonces where id_event =?", [idEvent], (anncsErr, anncsDatas) => {
+                db.query("SELECT id_anncs from annonces where id_event =? and status = ?", [idEvent, "actif"], (anncsErr, anncsDatas) => {
                     if(anncsErr) {
                         messageJson.msg = anncsErr.message;
                         return response.json(messageJson);
@@ -317,6 +331,67 @@ exports.evenementAdd = async (request, response) => {
         });
     } else {
         messageJson.msg = "Veuillez revérifier l'url.";
+        return response.json(messageJson);
+    }
+}
+
+/**
+ * Fonctionnalité d'ajout d'annonce gagnant
+ * @param {express.Request} request { idAnncs, idEvent, ref }
+ * @param {express.Response} response { msg, url, succes, data }
+ * @returns Object
+ */
+ exports.fonction = async (request, response) => {
+    let messageJson = {msg : "", url : "", succes : false, data : null};
+    let { idAnncs, idEvent, ref } = await request.body;
+    if((idAnncs != "" && idAnncs != undefined && parseInt(idAnncs) > 0) && (idEvent != "" && idEvent != undefined && parseInt(idEvent) > 0) && 
+    (ref != "" && ref != undefined)) {
+        try {
+            db.query("SELECT * from annonces where id_anncs = ?", [idAnncs], (errAnncs, datasAnncs) => {
+                if(errAnncs) {
+                    messageJson.msg = errAnncs.message;
+                    return response.json(messageJson);
+                }
+                if(datasAnncs.length > 0) {
+                    db.query("SELECT * from evenements where id_event = ?", [idEvent], (errEvent, datasEvent) => {
+                        if(errEvent) {
+                            messageJson.msg = errEvent.message;
+                            return response.json(messageJson);
+                        }
+                        if(datasEvent.length > 0) {
+                            db.query("UPDATE annonces set limite = ? and id_anncs = ?", [(datasAnncs[0].limite - 1), idAnncs], 
+                            (errUpdate) => {
+                                if(errUpdate) {
+                                    messageJson.msg = errUpdate.message;
+                                    return response.json(messageJson);
+                                }
+                                db.query("INSERT into gagner(id_anncs, id_event, ref) values(?,?,?)", [idAnncs, idEvent, ref], 
+                                (err) => {
+                                    if(err) {
+                                        messageJson.msg = err.message;
+                                        return response.json(messageJson);
+                                    }
+                                    messageJson.msg = "Gain sauvegarder";
+                                    messageJson.succes = true;
+                                    return response.json(messageJson);
+                                });
+                            });
+                        } else {
+                            messageJson.msg = "Annonce inexistante.";
+                            return response.json(messageJson);
+                        }
+                    });
+                } else {
+                    messageJson.msg = "Annonce inexistante.";
+                    return response.json(messageJson);
+                }
+            });
+        } catch (error) {
+            messageJson.msg = error.message;
+            return response.json(messageJson);
+        }
+    } else {
+        messageJson.msg = "Veuillez renseigner tous les champs.";
         return response.json(messageJson);
     }
 }
