@@ -145,7 +145,7 @@ exports.evenementAdd = async (request, response) => {
                                 });
                             } else {
                                 db.query(`INSERT into annonces(id_anncrs,id_event,description,objectif,type_med,type_url,url_des,type_anncs,
-                                    duree,limite,status) values(?,?,?,?,?,?,?,?,?,?,?)`, 
+                                    duree,status) values(?,?,?,?,?,?,?,?,?,?)`, 
                                 [id_anncrs, id_event, description, objectif, type_med, type_url, url_des, type_anncs, duree, "actif"], 
                                 (err) => {
                                     if(err) {
@@ -306,7 +306,6 @@ exports.evenementAdd = async (request, response) => {
             messageJson.msg = "L'identifiant de l'annonce doit être numérique.";
             return response.json(messageJson);
         }
-        console.log(verif);
         await db.query("SELECT * from annonces where id_anncs = ?", [id], (err, datas) => {
             if(err) {
                 messageJson.msg = anncsErr.message;
@@ -341,7 +340,7 @@ exports.evenementAdd = async (request, response) => {
  * @param {express.Response} response { msg, url, succes, data }
  * @returns Object
  */
- exports.fonction = async (request, response) => {
+ exports.gagnerAdd = async (request, response) => {
     let messageJson = {msg : "", url : "", succes : false, data : null};
     let { idAnncs, idEvent, ref } = await request.body;
     if((idAnncs != "" && idAnncs != undefined && parseInt(idAnncs) > 0) && (idEvent != "" && idEvent != undefined && parseInt(idEvent) > 0) && 
@@ -359,7 +358,7 @@ exports.evenementAdd = async (request, response) => {
                             return response.json(messageJson);
                         }
                         if(datasEvent.length > 0) {
-                            db.query("UPDATE annonces set limite = ? and id_anncs = ?", [(datasAnncs[0].limite - 1), idAnncs], 
+                            db.query("UPDATE annonces set limite = ? where id_anncs = ?", [parseInt(datasAnncs[0].limite)-1, idAnncs], 
                             (errUpdate) => {
                                 if(errUpdate) {
                                     messageJson.msg = errUpdate.message;

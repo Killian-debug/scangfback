@@ -22,6 +22,8 @@ router.post("/evenement", (req, res) => { routage.evenementAdd(req, res); });
 
 router.post("/annonce", (req, res) => { routage.annonceAdd(req, res); });
 
+router.post("/gagner", (req, res) => { routage.gagnerAdd(req, res); });
+
 // LES ROUTES PUT
 
 
