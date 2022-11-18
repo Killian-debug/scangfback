@@ -1,8 +1,8 @@
 require("dotenv").config();
 const express = require("express");
 const excookieParser = require("cookie-parser");
-const cros = require("./functions/corsApi");
-const router = require("./routers/route")
+const cros = require("./vendor/functions/corsApi");
+const router = require("./vendor/routers/route");
 
 
 const port = process.env.SERVER_PORT;
