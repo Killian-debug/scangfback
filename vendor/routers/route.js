@@ -8,6 +8,8 @@ const routage = require("../controllers/controller");
 
 router.get("/generateur/ref", (req, res) => { routage.generateurRef(req, res); });
 
+router.get("/dateverif", (req, res) => { routage.dateVerif(req, res); });
+
 router.get("/select/aleatoire/annonce", (req, res) => { routage.annonceAleatoire(req, res); });
 
 router.get("/select/aleatoire/annonce/:idEvent", (req, res) => { routage.annonceAleatoireEvent(req, res); });

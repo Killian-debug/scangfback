@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const { array } = require("joi");
-const { values, forEachRight } = require("lodash");
+const { values, forEachRight, split } = require("lodash");
 const { NUMBER } = require("sequelize");
 const validator = require("validator");
 const db = require("../database/dbConnection");
@@ -358,11 +358,20 @@ exports.evenementAdd = async (request, response) => {
                             return response.json(messageJson);
                         }
                         if(datasEvent.length > 0) {
-                            db.query("UPDATE annonces set limite = ? where id_anncs = ?", [parseInt(datasAnncs[0].limite)-1, idAnncs], 
+                            let step = parseInt(datasAnncs[0].limite)-1;
+                            db.query("UPDATE annonces set limite = ? where id_anncs = ?", [step, idAnncs], 
                             (errUpdate) => {
                                 if(errUpdate) {
                                     messageJson.msg = errUpdate.message;
                                     return response.json(messageJson);
+                                }
+                                if(step == 0) {
+                                    db.query("UPDATE annonces set status = ? where id_anncs = ?", ["inactif", idAnncs], (errDisablade) => {
+                                        if(errDisablade) {
+                                            messageJson.msg = errDisablade.message;
+                                            return response.json(messageJson);
+                                        }
+                                    });
                                 }
                                 db.query("INSERT into gagner(id_anncs, id_event, ref) values(?,?,?)", [idAnncs, idEvent, ref], 
                                 (err) => {
@@ -391,6 +400,38 @@ exports.evenementAdd = async (request, response) => {
         }
     } else {
         messageJson.msg = "Veuillez renseigner tous les champs.";
+        return response.json(messageJson);
+    }
+}
+
+/**
+ * Fonctionnalité de vérification de date
+ * @param {express.Request} request
+ * @param {express.Response} response { msg, url, succes, data }
+ * @returns Object
+ */
+ exports.dateVerif = async (request, response) => {
+    let messageJson = {msg : "", url : "", succes : false, data : null};
+    try {
+        db.query("SELECT * from evenements", (errEvent, datasEvent) => {
+            if(errEvent) {
+                messageJson.msg = errEvent.message;
+                return response.json(messageJson);
+            }
+            if(datasEvent.length > 0) {
+                let dat = 
+                datasEvent.forEach(element => {
+                    let dat = element.datfin;
+                    let datVal = new Date(element.datfin);
+                    console.log(dat.getTime(),1);
+                    console.log(datVal,2);
+                });
+                messageJson.msg = "ok";
+                return response.json(messageJson);
+            }
+        });
+    } catch (error) {
+        messageJson.msg = error.message;
         return response.json(messageJson);
     }
 }
