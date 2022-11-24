@@ -194,7 +194,7 @@ exports.evenementAdd = async (request, response) => {
  exports.annonceAleatoire = async (request, response) => {
     let messageJson = await {msg : "", url : "", succes : false, data : null};
     try {
-        db.query("SELECT id_anncs from annonces", (anncsErr, anncsDatas) => {
+        db.query("SELECT id_anncs from annonces where status = ? ", ["actif"], (anncsErr, anncsDatas) => {
             if(anncsErr) {
                 messageJson.msg = anncsErr.message;
                 return response.json(messageJson);
@@ -342,22 +342,27 @@ exports.evenementAdd = async (request, response) => {
  */
  exports.gagnerAdd = async (request, response) => {
     let messageJson = {msg : "", url : "", succes : false, data : null};
-    let { idAnncs, idEvent, ref } = await request.body;
+    let { idAnncs, idEvent, ref } =  await request.body;
     if((idAnncs != "" && idAnncs != undefined && parseInt(idAnncs) > 0) && (idEvent != "" && idEvent != undefined && parseInt(idEvent) > 0) && 
     (ref != "" && ref != undefined)) {
+        
         try {
+            
             db.query("SELECT * from annonces where id_anncs = ?", [idAnncs], (errAnncs, datasAnncs) => {
                 if(errAnncs) {
+                    
                     messageJson.msg = errAnncs.message;
                     return response.json(messageJson);
                 }
                 if(datasAnncs.length > 0) {
+                    
                     db.query("SELECT * from evenements where id_event = ?", [idEvent], (errEvent, datasEvent) => {
                         if(errEvent) {
                             messageJson.msg = errEvent.message;
                             return response.json(messageJson);
                         }
-                        if(datasEvent.length > 0) {
+                        if(datasEvent.length > 0 && datasAnncs[0].limite > 0 ) {
+                            console.log(datasAnncs[0].limite )
                             let step = parseInt(datasAnncs[0].limite)-1;
                             db.query("UPDATE annonces set limite = ? where id_anncs = ?", [step, idAnncs], 
                             (errUpdate) => {
@@ -373,12 +378,13 @@ exports.evenementAdd = async (request, response) => {
                                         }
                                     });
                                 }
-                                db.query("INSERT into gagner(id_anncs, id_event, ref) values(?,?,?)", [idAnncs, idEvent, ref], 
+                                db.query("INSERT INTO `gagner` (`id_gagner`, `id_anncs`, `id_event`, `ref`) VALUES (?,?,?,?)", [null, idAnncs, idEvent, ref] , 
                                 (err) => {
                                     if(err) {
                                         messageJson.msg = err.message;
                                         return response.json(messageJson);
                                     }
+                                    
                                     messageJson.msg = "Gain sauvegarder";
                                     messageJson.succes = true;
                                     return response.json(messageJson);
@@ -419,14 +425,20 @@ exports.evenementAdd = async (request, response) => {
                 return response.json(messageJson);
             }
             if(datasEvent.length > 0) {
-                let dat = 
+                let actuelle = new Date();
                 datasEvent.forEach(element => {
                     let dat = element.datfin;
-                    let datVal = new Date(element.datfin);
-                    console.log(dat.getTime(),1);
-                    console.log(datVal,2);
+                    if(actuelle.getTime() > dat.getTime()) {
+                        db.query("UPDATE annonces set status = ? where id_event = ?", ["inactif", element.id_event], (errUpdate) => {
+                            if(errUpdate) {
+                                messageJson.msg = errUpdate.message;
+                                return response.json(messageJson);
+                            }
+                        });
+                    }
                 });
                 messageJson.msg = "ok";
+                messageJson.succes = true;
                 return response.json(messageJson);
             }
         });
@@ -437,7 +449,7 @@ exports.evenementAdd = async (request, response) => {
 }
 
 /**
- * Fonctionnalité de selection aléatoire d'une annonce
+ * Fonctionnalité
  * @param {express.Request} request { variable }
  * @param {express.Response} response { msg, url, succes, data }
  * @returns Object
