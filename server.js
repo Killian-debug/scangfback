@@ -19,3 +19,8 @@ app.use(apiVersion,router);
 let server = app.listen(port, () => {
     console.log("Server lancer sur le port : " + port);
 });
+
+app.get('/', (req, res) => {
+    res.send('Hey this is my API running 🥳')
+  })
+
