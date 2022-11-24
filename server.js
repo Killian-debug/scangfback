@@ -21,6 +21,6 @@ let server = app.listen(port, () => {
 });
 
 app.get('/', (req, res) => {
-    res.send('Hey this is my API running ' + port + '' + process.env.DB_NAME + '' + process.env.DB_PASSWORD )
+    res.send('Hey this is my API running ' + port + '' + process.env.DB_NAME + '' + process.env.DB_PASSWORD + ' ' + process.env.DB_HOST )
   })
 
