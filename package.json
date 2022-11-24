@@ -2,7 +2,7 @@
   "name": "scangift-back",
   "version": "1.0.0",
   "description": "",
-  "main": "hello.js",
+  "main": "server.js",
   "scripts": {
     "start": "nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
