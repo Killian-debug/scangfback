@@ -308,7 +308,7 @@ exports.evenementAdd = async (request, response) => {
         }
         await db.query("SELECT * from annonces where id_anncs = ?", [id], (err, datas) => {
             if(err) {
-                messageJson.msg = anncsErr.message;
+                messageJson.msg = err.message;
                 return response.json(messageJson);
             }
             if(datas.length == 0) {
