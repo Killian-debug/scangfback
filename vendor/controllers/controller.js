@@ -12,11 +12,11 @@ const generateur = require("../functions/generator");
  * Fonctionnalité d'ajout d'un annonceur
  * @param {express.Request} request { nom, email, tel }
  * @param {express.Response} response { msg, url, succes, data }
- * @returns Object
+ * @return Object
  */
-exports.annonceurAdd = async (request, response) => {
+exports.annonceurAdd =  (request, response) => {
     let messageJson = {msg : "", url : "", succes : false, data : null};
-    let { nom, email, tel, indice } = await request.body;
+    let { nom, email, tel } =  request.body;
     if((nom != "" && nom != undefined) && (email != "" && email != undefined) && (tel != "" && tel != undefined)) {
         if(!validator.isEmail(email)) {
             messageJson.msg = "Adresse e-mail invalide.";
@@ -52,6 +52,42 @@ exports.annonceurAdd = async (request, response) => {
         return response.json(messageJson);
     }
 }
+
+
+
+/**
+ * Fonctionnalité de récupération des annonceurs
+ * @param {express.Request} request
+ * @param {express.Response} response { msg, url, succes, data }
+ * @returns Object
+ */
+ exports.annonceurGet = async (request, response) => {
+    let messageJson = await {msg : "", url : "", succes : false, data : null};
+    try {
+        db.query("SELECT * from annonceurs", (anncsErr, anncsDatas) => {
+            if(anncsErr) {
+                messageJson.msg = anncsErr.message;
+                return response.json(messageJson);
+            }
+            if(anncsDatas.length == 0) {
+                messageJson.data = "Veuillez ajouter des annonceurs.";
+                return response.json(messageJson);
+            }
+        
+            messageJson.data = anncsDatas ;
+            messageJson.msg = "sélection ok";
+            messageJson.succes = true;
+            return response.json(messageJson);
+           
+        });
+    } catch (error) {
+        messageJson.msg = error.message;
+        return response.json(messageJson);
+    }
+}
+
+
+
 
 /**
  * Fonctionnalité d'ajout d'un evenement
@@ -106,7 +142,7 @@ exports.evenementAdd = async (request, response) => {
  */
  exports.annonceAdd = async (request, response) => {
     let messageJson = {msg : "", url : "", succes : false, data : null};
-    let { description, objectif, type_med, type_url, url_des, type_anncs, duree, limite, id_anncrs, id_event } = await request.body;
+    let { description, objectif, type_med, type_url, url_des, type_anncs, duree, limite, id_anncrs, id_event, url_med } = await request.body;
     if((description != "" && description != undefined) && (objectif != "" && objectif != undefined) && (type_med != "" && type_med != undefined) && 
     (type_url != "" && type_url != undefined) && (url_des != "" && url_des != undefined) && (type_anncs != undefined && parseInt(type_anncs) >= 0) && 
     (duree != "" && duree != undefined && parseInt(duree) > 0) && (limite != undefined) && (id_anncrs != "" && id_anncrs != undefined && parseInt(id_anncrs) > 0) && 
@@ -141,8 +177,9 @@ exports.evenementAdd = async (request, response) => {
                                     }
                                     messageJson.msg = "Annonce ajoutée avec succés.";
                                     messageJson.succes = true;
-                                    return response.json(messageJson);
+                                    // return response.json(messageJson);
                                 });
+
                             } else {
                                 db.query(`INSERT into annonces(id_anncrs,id_event,description,objectif,type_med,type_url,url_des,type_anncs,
                                     duree,status) values(?,?,?,?,?,?,?,?,?,?)`, 
@@ -154,9 +191,30 @@ exports.evenementAdd = async (request, response) => {
                                     }
                                     messageJson.msg = "Annonce ajoutée avec succés.";
                                     messageJson.succes = true;
-                                    return response.json(messageJson);
+                                    // return response.json(messageJson);
                                 });
                             }
+
+                            db.query("SELECT MAX(id_anncs) max_id from annonces", (errAnncs, dataAnncs) => {
+                                if(errAnncs) {
+                                    messageJson.msg = errAnncs.message;
+                                    return response.json(messageJson);
+                                } else {
+                                    if(dataAnncs.length == 0) {
+                                        messageJson.msg = "Annonce inexistant.";
+                                        return response.json(messageJson);
+                                    }
+                                    db.query('INSERT INTO media(id_anncs,url_med) VALUES (?,?) ', [dataAnncs[0].max_id, url_med], (err) => {
+                                        if(err) {
+                                            messageJson.msg = err.message;
+                                            return response.json(messageJson);
+                                        }
+                                        messageJson.msg = "Annonce et Media ajoutés avec succes.";
+                                        messageJson.succes = true;
+                                        return response.json(messageJson);
+                                    });
+                                }
+                            })
                         }
                     });
                 }
@@ -306,9 +364,9 @@ exports.evenementAdd = async (request, response) => {
             messageJson.msg = "L'identifiant de l'annonce doit être numérique.";
             return response.json(messageJson);
         }
-        await db.query("SELECT * from annonces where id_anncs = ?", [id], (err, datas) => {
+        await db.query("SELECT * from annonces where id_anncs = ?", [id], (anncsErr, datas) => {
             if(err) {
-                messageJson.msg = err.message;
+                messageJson.msg = anncsErr.message;
                 return response.json(messageJson);
             }
             if(datas.length == 0) {
