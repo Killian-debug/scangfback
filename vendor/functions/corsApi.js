@@ -11,4 +11,5 @@ function genCors(req, res, next) {
     }
     next();
 }
+
 module.exports = genCors;

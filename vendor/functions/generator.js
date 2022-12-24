@@ -12,9 +12,9 @@
  * 
  * @returns String
  */
-exports.generateRef = () => {
+exports.generateRef = (n = 6) => {
     var chars = "0123456789abcdefghijklmnopqrstuvwxyz!@#€£$%&*(+-?)ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    var refLength = 6;
+    var refLength = n;
     var ref = "";
     for(var i = 0; i < refLength; i++) {
         var randomNumber = Math.floor(Math.random() * chars.length);
