@@ -182,7 +182,7 @@ exports.evenementAdd = async (request, response) => {
 exports.annonceAdd = async (request, response) => {
   let messageJson = { msg: "", url: "", succes: false, data: null };
   let { description, objectif, type_med, type_url, url_des, type_anncs, duree, limite, id_anncrs, id_event } = await request.body;
-  console.log(request.body);
+ 
   if (
     description != "" &&
     description != undefined &&
