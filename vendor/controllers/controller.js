@@ -532,7 +532,7 @@ exports.gagnerAdd = async (request, response) => {
                   messageJson.msg = errEvent.message;
                   return response.json(messageJson);
                 }
-                if (datasEvent.length > 0 && datasAnncs[0].limite > 0) {
+                if (datasEvent.length > 0 && datasAnncs[0].limite !== 0) {
                   console.log(datasAnncs[0].limite);
                   let step = parseInt(datasAnncs[0].limite) - 1;
                   db.query(
