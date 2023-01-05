@@ -564,7 +564,7 @@ exports.gagnerAdd = async (request, response) => {
                             return response.json(messageJson);
                           }
 
-                          messageJson.msg = "Gain sauvegarder";
+                          messageJson.msg = "Gain sauvegarde";
                           messageJson.succes = true;
                           return response.json(messageJson);
                         }
@@ -572,7 +572,7 @@ exports.gagnerAdd = async (request, response) => {
                     }
                   );
                 } else {
-                  messageJson.msg = "Annonce inexistante.";
+                  messageJson.msg = "Annonce/evenement termine.";
                   return response.json(messageJson);
                 }
               }
