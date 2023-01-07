@@ -366,6 +366,65 @@ exports.annonceAleatoire = async (request, response) => {
 };
 
 /**
+ * Fonctionnalité de selection aléatoire d'une annonce non gagnante ( publicitaire )
+ * @param {express.Request} request
+ * @param {express.Response} response { msg, url, succes, data }
+ * @returns Object
+ */
+exports.annoncePubAleatoire = async (request, response) => {
+  let messageJson = await { msg: "", url: "", succes: false, data: null };
+  try {
+    console.log('cou')
+    db.query(
+      "SELECT id_anncs from annonces where status = ? AND type_anncs = ?",
+      ["actif", 2],
+      (anncsErr, anncsDatas) => {
+        if (anncsErr) {
+          messageJson.msg = anncsErr.message;
+          return response.json(messageJson);
+        }
+        if (anncsDatas.length == 0) {
+          messageJson.data = "Veuillez ajouter d'annonce.";
+          return response.json(messageJson);
+        }
+       
+        let idAnncsArray = anncsDatas.map((anncsData) => anncsData.id_anncs);
+        let id = generateur.generateur(idAnncsArray);
+        db.query(
+          "SELECT * from annonces where id_anncs = ? and status = ?",
+          [id, "actif"],
+          (err, datas) => {
+            if (err) {
+              messageJson.msg = anncsErr.message;
+              return response.json(messageJson);
+            }
+            let altAnnonce = datas[0];
+            db.query(
+              "SELECT * from media where id_anncs = ?",
+              [altAnnonce.id_anncs],
+              (errMedia, datasMedia) => {
+                if (errMedia) {
+                  messageJson.msg = errMedia.message;
+                  return response.json(messageJson);
+                }
+                altAnnonce.media = datasMedia;
+                messageJson.data = altAnnonce;
+                messageJson.msg = "sélection ok";
+                messageJson.succes = true;
+                return response.json(messageJson);
+              }
+            );
+          }
+        );
+      }
+    );
+  } catch (error) {
+    messageJson.msg = error.message;
+    return response.json(messageJson);
+  }
+};
+
+/**
  * Fonctionnalité de selection aléatoire d'une annonce d'un evenement
  * @param {express.Request} request {idEvent}
  * @param {express.Response} response { msg, url, succes, data }
