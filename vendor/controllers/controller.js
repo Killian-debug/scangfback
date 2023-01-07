@@ -374,7 +374,6 @@ exports.annonceAleatoire = async (request, response) => {
 exports.annoncePubAleatoire = async (request, response) => {
   let messageJson = await { msg: "", url: "", succes: false, data: null };
   try {
-    console.log('cou')
     db.query(
       "SELECT id_anncs from annonces where status = ? AND type_anncs = ?",
       ["actif", 2],
@@ -652,6 +651,46 @@ exports.gagnerAdd = async (request, response) => {
   }
 };
 
+
+/**
+ * Fonctionnalité d'ajout de visite d'une url
+ * @param {express.Request} request { url, ip }
+ * @param {express.Response} response { msg, url, succes, data }
+ * @returns Object
+ */
+exports.visiteAdd = async (request, response) => {
+  let messageJson = { msg: "", url: "", succes: false, data: null };
+  let { url, ip } = await request.body;
+  if (
+    url != "" &&
+    url != undefined &&
+    ip != "" &&
+    ip != undefined
+  ) {
+    try {
+      db.query(
+        "INSERT INTO stats ( url, ip) VALUES (?,?)",
+        [url, ip],
+        (err) => {
+          if (err) {
+            messageJson.msg = err.message;
+            return response.json(messageJson);
+          }
+
+          messageJson.msg = "Visite enregistre";
+          messageJson.succes = true;
+          return response.json(messageJson);
+        }
+      );
+    } catch (error) {
+      messageJson.msg = error.message;
+      return response.json(messageJson);
+    }
+  } else {
+    messageJson.msg = "Renseignez toutes les infos.";
+    return response.json(messageJson);
+  }
+};
 /**
  * Fonctionnalité de vérification de date
  * @param {express.Request} request

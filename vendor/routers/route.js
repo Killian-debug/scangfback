@@ -34,7 +34,11 @@ router.post("/annonceur", (req, res) => { routage.annonceurAdd(req, res); });
 
 router.post("/evenement", (req, res) => { routage.evenementAdd(req, res); });
 
-// LES ROUTES DES GAGNANTS
+
+// LES ROUTES DES STATS
+
+// ajouter un visite
+router.post("/visite", (req, res) => { routage.visiteAdd(req, res); });
 
 //ajouter un gain
 router.post("/gagner", (req, res) => { routage.gagnerAdd(req, res); });
