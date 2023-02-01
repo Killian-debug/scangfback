@@ -22,7 +22,6 @@ router.get("/select/annonce/:id", (req, res) => { routage.annonceSelector(req, r
 
 router.get("/select/pub/annonce", (req, res) => { routage.annoncePubAleatoire(req, res); });
 
-
 router.post("/annonce", uploadFile, (req, res) => { routage.annonceAdd(req, res); });
 
 

@@ -502,6 +502,7 @@ exports.annonceAleatoireEvent = async (request, response) => {
   }
 };
 
+
 /**
  * Fonctionnalité de selection d'une annonce
  * @param {express.Request} request {id}
@@ -660,7 +661,7 @@ exports.gagnerAdd = async (request, response) => {
  */
 exports.visiteAdd = async (request, response) => {
   let messageJson = { msg: "", url: "", succes: false, data: null };
-  let { url, ip } = await request.body;
+  let { code_event, id_anncs, url, ip } = await request.body;
   if (
     url != "" &&
     url != undefined &&
@@ -669,16 +670,17 @@ exports.visiteAdd = async (request, response) => {
   ) {
     try {
       db.query(
-        "INSERT INTO stats ( url, ip) VALUES (?,?)",
-        [url, ip],
+        "INSERT INTO stats ( code_event, id_anncs, url, ip) VALUES (?,?,?,?)",
+        [code_event, id_anncs, url, ip],
         (err) => {
           if (err) {
             messageJson.msg = err.message;
             return response.json(messageJson);
           }
-
+          console.log("okau")
           messageJson.msg = "Visite enregistre";
           messageJson.succes = true;
+          console.log(code_event, id_anncs, url, ip)
           return response.json(messageJson);
         }
       );
@@ -691,6 +693,8 @@ exports.visiteAdd = async (request, response) => {
     return response.json(messageJson);
   }
 };
+
+
 /**
  * Fonctionnalité de vérification de date
  * @param {express.Request} request
