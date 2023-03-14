@@ -661,7 +661,7 @@ exports.gagnerAdd = async (request, response) => {
  */
 exports.visiteAdd = async (request, response) => {
   let messageJson = { msg: "", url: "", succes: false, data: null };
-  let { code_event, id_anncs, url, ip } = await request.body;
+  let { id_event, id_anncs, url, ip } = await request.body;
   if (
     url != "" &&
     url != undefined &&
@@ -671,7 +671,7 @@ exports.visiteAdd = async (request, response) => {
     try {
       db.query(
         "INSERT INTO stats ( id_event, id_anncs, url, ip) VALUES (?,?,?,?)",
-        [code_event, id_anncs, url, ip],
+        [id_event, id_anncs, url, ip],
         (err) => {
           if (err) {
             messageJson.msg = err.message;
