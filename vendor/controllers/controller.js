@@ -670,7 +670,7 @@ exports.visiteAdd = async (request, response) => {
   ) {
     try {
       db.query(
-        "INSERT INTO stats ( code_event, id_anncs, url, ip) VALUES (?,?,?,?)",
+        "INSERT INTO stats ( id_event, id_anncs, url, ip) VALUES (?,?,?,?)",
         [code_event, id_anncs, url, ip],
         (err) => {
           if (err) {
