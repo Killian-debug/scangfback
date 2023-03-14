@@ -661,7 +661,7 @@ exports.gagnerAdd = async (request, response) => {
  */
 exports.visiteAdd = async (request, response) => {
   let messageJson = { msg: "", url: "", succes: false, data: null };
-  let { code_event, id_anncs, url, ip } = await request.body;
+  let { id_event, id_anncs, url, ip } = await request.body;
   if (
     url != "" &&
     url != undefined &&
@@ -670,8 +670,8 @@ exports.visiteAdd = async (request, response) => {
   ) {
     try {
       db.query(
-        "INSERT INTO stats ( code_event, id_anncs, url, ip) VALUES (?,?,?,?)",
-        [code_event, id_anncs, url, ip],
+        "INSERT INTO stats ( id_event, id_anncs, url, ip) VALUES (?,?,?,?)",
+        [id_event, id_anncs, url, ip],
         (err) => {
           if (err) {
             messageJson.msg = err.message;
@@ -680,7 +680,7 @@ exports.visiteAdd = async (request, response) => {
           console.log("okau")
           messageJson.msg = "Visite enregistre";
           messageJson.succes = true;
-          console.log(code_event, id_anncs, url, ip)
+          console.log(id_event, id_anncs, url, ip)
           return response.json(messageJson);
         }
       );
