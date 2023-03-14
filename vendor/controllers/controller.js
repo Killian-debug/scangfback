@@ -680,7 +680,7 @@ exports.visiteAdd = async (request, response) => {
           console.log("okau")
           messageJson.msg = "Visite enregistre";
           messageJson.succes = true;
-          console.log(code_event, id_anncs, url, ip)
+          console.log(id_event, id_anncs, url, ip)
           return response.json(messageJson);
         }
       );
